@@ -2,9 +2,9 @@
 
 打游戏时在屏幕上实时显示手柄按键的悬浮窗。透明、置顶、不挡操作。
 
-内置两套主题：现代线框 HUD 与像素风，可随时切换。基于 Windows XInput，不注入游戏进程，不读写游戏内存。
+内置五套主题：HUD 线框、霓虹、极简、终端绿、像素风，可随时切换。基于 Windows XInput，不注入游戏进程，不读写游戏内存。
 
-> A transparent, always-on-top gamepad input overlay for Windows. Shows buttons, stick positions and trigger travel in real time. Two switchable themes. Pure XInput, no DLL injection, no third-party dependencies.
+> A transparent, always-on-top gamepad input overlay for Windows. Shows buttons, stick positions and trigger travel in real time. Five switchable themes. Pure XInput, no DLL injection, no third-party dependencies.
 
 ---
 
@@ -12,8 +12,7 @@
 
 - **透明置顶悬浮**：背景完全透明，只留下手柄图形浮在游戏画面上
 - **完整输入可视化**：ABXY、方向键、肩键、摇杆偏移、扳机按压深度（带百分比）
-- **两套主题**：现代线框 HUD / 像素风，一键切换
-- **全局热键**：游戏进行中也能操作
+- **五套主题**：HUD 线框 / 霓虹 / 极简 / 终端绿 / 像素风，一键切换
 - **鼠标穿透锁定**：锁定后鼠标可以点穿到底下的游戏
 - **可调**：缩放 75%–300%，不透明度 55%–100%
 - **单文件 exe**：12 MB，免安装，无运行库依赖
@@ -39,11 +38,14 @@
 
 右键菜单里可以调整主题、缩放、不透明度和锁定状态。
 
-### 两套主题
+### 五套主题
 
 | 主题 | 风格 |
 | --- | --- |
 | **HUD 线框**（默认） | 细线描边 + 系统字体，暗色极简。扳机显示进度条与百分比，摇杆中心圆点实时反映方向 |
+| **霓虹** | 青色主线配品红强调，圆环带外发光光晕，适合深色游戏画面 |
+| **极简** | 纯灰白单色，去掉填充只留轮廓，视觉负担最低 |
+| **终端绿** | 等宽字体 + 方角框线 + 荧光绿，复古终端 HUD |
 | **像素风** | 在像素网格上逐格绘制的手柄，按键整块变色 |
 
 ## 从源码运行
@@ -75,7 +77,7 @@ pyinstaller --onefile --windowed --icon=app.ico --name=OverPad overpad.py
 
 - **输入**：`ctypes` 直连 `xinput1_4.dll`，8 ms 轮询。Guide 键（西瓜键）不在标准 `XInputGetState` 的返回里，需要按序号 100 取隐藏导出 `XInputGetStateEx`。
 - **透明**：无边框窗口 + 色键抠图。色键刻意选近黑色而非品红——系统字体的抗锯齿过渡像素混进近黑色只会形成极轻的暗边，混进品红则会出现一圈显眼的脏边。
-- **渲染**：HUD 主题全部用 Tk 原生图元（GDI 硬边光栅化，无抗锯齿），像素主题在 104×86 网格上按整数倍放大绘制。
+- **渲染**：HUD 系列主题全部用 Tk 原生图元（GDI 硬边光栅化，无抗锯齿），像素主题在 104×86 网格上按整数倍放大绘制。除像素主题外，其余四套全部继承同一个基类，只覆盖配色 / 字体 / 圆角 / 是否发光几个类属性即可长出新皮肤。
 - **不注入**：程序只是一个普通置顶窗口，不挂接游戏进程、不读写游戏内存，不会触发反作弊。
 
 ## 已知限制
@@ -89,7 +91,10 @@ pyinstaller --onefile --windowed --icon=app.ico --name=OverPad overpad.py
 
 ```
 overpad.py        主程序：窗口、输入、热键、配置
-theme_hud.py      HUD 线框主题
+theme_hud.py      HUD 主题基类（配色/字体/圆角/发光都可配置）
+theme_neon.py     霓虹主题（继承 HUD 基类）
+theme_minimal.py  极简主题（继承 HUD 基类）
+theme_mono.py     终端绿主题（继承 HUD 基类）
 theme_pixel.py    像素主题
 layout.py         像素主题的几何与调色板
 make_ico.py       生成多尺寸 ico

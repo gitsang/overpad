@@ -30,13 +30,30 @@ import tkinter as tk
 
 import layout as L
 from theme_hud import HudTheme
+from theme_minimal import MinimalTheme
+from theme_mono import MonoTheme
+from theme_neon import NeonTheme
 from theme_pixel import PixelTheme
 
 APP = "OverPad"
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 CONFIG_NAME = "overpad.json"
 
-THEMES = {"hud": HudTheme, "pixel": PixelTheme}
+THEMES = {
+    "hud": HudTheme,
+    "neon": NeonTheme,
+    "minimal": MinimalTheme,
+    "mono": MonoTheme,
+    "pixel": PixelTheme,
+}
+
+THEME_LABELS = {
+    "hud": "HUD 线框",
+    "neon": "霓虹",
+    "minimal": "极简",
+    "mono": "终端绿",
+    "pixel": "像素风",
+}
 ZOOMS = (0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.5, 3.0)
 
 KEY_COLOR = "#010203"
@@ -267,9 +284,9 @@ def hotkey_worker(q):
 
 
 class Overlay:
-    def __init__(self, demo=False):
+    def __init__(self, demo=False, theme=None):
         self.cfg = load_cfg()
-        name = self.cfg.get("theme")
+        name = theme or self.cfg.get("theme")
         self.theme_name = name if name in THEMES else "hud"
         z = self.cfg.get("zoom")
         self.zoom = float(z) if z else auto_zoom()
@@ -507,10 +524,10 @@ class Overlay:
 
         tsub = tk.Menu(m, tearoff=0)
         tv = tk.StringVar(value=self.theme_name)
-        tsub.add_radiobutton(label="HUD 线框", value="hud", variable=tv,
-                             command=lambda: self.set_theme("hud"))
-        tsub.add_radiobutton(label="像素风", value="pixel", variable=tv,
-                             command=lambda: self.set_theme("pixel"))
+        for key in THEMES:
+            tsub.add_radiobutton(label=THEME_LABELS.get(key, key), value=key,
+                                 variable=tv,
+                                 command=lambda k=key: self.set_theme(k))
         m.add_cascade(label="主题", menu=tsub)
 
         zsub = tk.Menu(m, tearoff=0)
@@ -573,7 +590,16 @@ def main():
         print("preview saved:", out)
         return
 
-    Overlay(demo="--demo" in sys.argv).run()
+    Overlay(demo="--demo" in sys.argv,
+            theme=_arg("--theme")).run()
+
+
+def _arg(flag):
+    if flag in sys.argv:
+        i = sys.argv.index(flag)
+        if i + 1 < len(sys.argv):
+            return sys.argv[i + 1]
+    return None
 
 
 if __name__ == "__main__":
